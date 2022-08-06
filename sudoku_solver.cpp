@@ -1,92 +1,63 @@
 #include <iostream>
-#define N 9
+
+#include <vector>
+
 using namespace std;
-int grid[N][N] = {
-   {3, 0, 6, 5, 0, 8, 4, 0, 0},
-   {5, 2, 0, 0, 0, 0, 0, 0, 0},
-   {0, 8, 7, 0, 0, 0, 0, 3, 1},
-   {0, 0, 3, 0, 1, 0, 0, 8, 0},
-   {9, 0, 0, 8, 6, 3, 0, 0, 5},
-   {0, 5, 0, 0, 9, 0, 6, 0, 0},
-   {1, 3, 0, 0, 0, 0, 2, 5, 0},
-   {0, 0, 0, 0, 0, 0, 0, 7, 4},
-   {0, 0, 5, 2, 0, 6, 3, 0, 0}
-};
-bool isPresentInCol(int col, int num){ //check whether num is present in col or not
-   for (int row = 0; row < N; row++)
-      if (grid[row][col] == num)
-         return true;
-   return false;
-}
-bool isPresentInRow(int row, int num){ //check whether num is present in row or not
-   for (int col = 0; col < N; col++)
-      if (grid[row][col] == num)
-         return true;
-   return false;
-}
-//to check if the number is present in the 3x3 box
-bool isPresentInBox(int boxStartRow, int boxStartCol, int num){
-//check whether num is present in 3x3 box or not
-   for (int row = 0; row < 3; row++)
-      for (int col = 0; col < 3; col++)
-         if (grid[row+boxStartRow][col+boxStartCol] == num)
-            return true;
-   return false;
+
+bool isValid(vector < vector < char >> & board, int row, int col, char c) {
+  for (int i = 0; i < 9; i++) {
+    if (board[i][col] == c)
+      return false;
+
+    if (board[row][i] == c)
+      return false;
+
+    if (board[3 * (row / 3) + i / 3][3 * (col / 3) + i % 3] == c)
+      return false;
+  }
+  return true;
 }
 
-void sudokuGrid(){ //print the sudoku grid after solve
-   for (int row = 0; row < N; row++){
-      for (int col = 0; col < N; col++){
-         if(col == 3 || col == 6)
-            cout << " | ";
-         cout << grid[row][col] <<" ";
+bool solve(vector < vector < char >> & board) {
+  for (int i = 0; i < board.size(); i++) {
+    for (int j = 0; j < board[0].size(); j++) {
+      if (board[i][j] == '.') {
+        for (char c = '1'; c <= '9'; c++) {
+          if (isValid(board, i, j, c)) {
+            board[i][j] = c;
+
+            if (solve(board))
+              return true;
+            else
+              board[i][j] = '.';
+          }
+        }
+
+        return false;
       }
-      if(row == 2 || row == 5){
-         cout << endl;
-         for(int i = 0; i<N; i++)
-            cout << "---";
-      }
-      cout << endl;
-   }
+    }
+  }
+  return true;
 }
-
-
-bool findEmptyPlace(int &row, int &col){ //get empty location and update row and column
-   for (row = 0; row < N; row++)
-      for (col = 0; col < N; col++)
-         if (grid[row][col] == 0) //marked with 0 is empty
-            return true;
-   return false;
-}
-
-//will take the row, column, number 
-//if not present in rown, column and 3x3 grid, then true 
-bool isValidPlace(int row, int col, int num){
-   //when item not found in col, row and current 3x3 box
-   return !isPresentInRow(row, num) && !isPresentInCol(col, num) && !isPresentInBox(row - row%3 ,
-col - col%3, num);
-}
-
-//if grid is filled, true 
-//then give the number to the row and column dor which is valid is true 
-
-bool solveSudoku(){
-   int row, col;
-   if (!findEmptyPlace(row, col))
-      return true; //when all places are filled
-   for (int num = 1; num <= 9; num++){ //valid numbers are 1 - 9
-      if (isValidPlace(row, col, num)){ //check validation, if yes, put the number in the grid
-         grid[row][col] = num;
-         if (solveSudoku()) //recursively go for other rooms in the grid
-            return true;
-         grid[row][col] = 0; //turn to unassigned space when conditions are not satisfied
-      }
-   }
-   return false;
-}
-int main(){
-   if (solveSudoku() == true)
-      sudokuGrid();
-   else
-      cout << "No solution exists";
+int main() {
+    vector<vector<char>>board{
+        {'9', '5', '7', '.', '1', '3', '.', '8', '4'},
+        {'4', '8', '3', '.', '5', '7', '1', '.', '6'},
+        {'.', '1', '2', '.', '4', '9', '5', '3', '7'},
+        {'1', '7', '.', '3', '.', '4', '9', '.', '2'},
+        {'5', '.', '4', '9', '7', '.', '3', '6', '.'},
+        {'3', '.', '9', '5', '.', '8', '7', '.', '1'},
+        {'8', '4', '5', '7', '9', '.', '6', '1', '3'},
+        {'.', '9', '1', '.', '3', '6', '.', '7', '5'},
+        {'7', '.', '6', '1', '8', '5', '4', '.', '9'}
+    };
+   
+    solve(board);
+        	
+    for(int i= 0; i< 9; i++){
+        for(int j= 0; j< 9; j++)
+            cout<<board[i][j]<<" ";
+            cout<<"\n";
+    }
+    return 0;
 }
